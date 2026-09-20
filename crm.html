@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRM Grandes Soluções</title>
+<style>
+:root{--navy:#092b4c;--blue:#1769aa;--bg:#f4f7fa;--card:#fff;--green:#168a52;--red:#c53d3d;--gray:#667085}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#17212b}
+header{background:var(--navy);color:white;padding:18px 16px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:20px}header small{opacity:.8}
+nav{display:flex;gap:6px;padding:10px;background:#fff;position:sticky;top:70px;z-index:4;overflow:auto;border-bottom:1px solid #ddd}
+nav button{border:0;background:#eef3f8;padding:10px 13px;border-radius:9px;white-space:nowrap}
+nav button.active{background:var(--blue);color:#fff}
+main{max-width:1050px;margin:auto;padding:16px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.card{background:var(--card);padding:16px;border-radius:14px;box-shadow:0 2px 10px #0000000d;margin-bottom:14px}
+.kpi{font-size:25px;font-weight:bold;margin-top:7px}.muted{color:var(--gray);font-size:13px}
+input,select,textarea{width:100%;padding:11px;border:1px solid #ccd4dc;border-radius:9px;margin:6px 0 12px;font-size:15px}
+button.primary{background:var(--blue);color:white;border:0;border-radius:9px;padding:11px 15px;font-weight:bold}
+button.secondary{background:#eef3f8;border:0;border-radius:9px;padding:10px 13px}
+button.danger{background:#fff0f0;color:var(--red);border:0;border-radius:9px;padding:8px}
+.row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.item{border:1px solid #e1e6eb;border-radius:11px;padding:12px;margin:8px 0;background:#fff}
+.status{display:inline-block;padding:5px 8px;border-radius:20px;background:#e8f3ff;color:#1769aa;font-size:12px}
+.voice{font-size:18px;width:100%;padding:18px;border:0;border-radius:14px;background:#0b7a55;color:#fff;font-weight:bold}
+#msg{margin:10px 0;padding:10px;border-radius:9px;background:#eef7ff}
+.hidden{display:none}.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:650px){.row,.two{grid-template-columns:1fr}main{padding:10px}}
+</style>
+</head>
+<body>
+<header><h1>🏠 CRM Grandes Soluções</h1><small>Versão de teste — seus dados ficam neste aparelho</small></header>
+<nav>
+<button onclick="show('inicio',this)" class="active">Início</button>
+<button onclick="show('clientes',this)">Clientes</button>
+<button onclick="show('novo',this)">+ Novo cliente</button>
+<button onclick="show('voz',this)">🎤 Voz</button>
+<button onclick="show('tarefas',this)">Tarefas</button>
+</nav>
+<main>
+<section id="inicio">
+<div class="grid">
+<div class="card"><div class="muted">Clientes</div><div class="kpi" id="kClientes">0</div></div>
+<div class="card"><div class="muted">Em negociação</div><div class="kpi" id="kNeg">0</div></div>
+<div class="card"><div class="muted">Valor em oportunidades</div><div class="kpi" id="kValor">R$ 0</div></div>
+<div class="card"><div class="muted">Follow-ups</div><div class="kpi" id="kTasks">0</div></div>
+</div>
+<div class="card"><h2>🚀 Ações rápidas</h2><button class="primary" onclick="show('novo')">Cadastrar cliente</button>
+<button class="secondary" onclick="show('voz')">Lançar por voz</button></div>
+<div class="card"><h2>Últimos clientes</h2><div id="recent"></div></div>
+</section>
+
+<section id="clientes" class="hidden">
+<div class="card"><h2>Clientes</h2><input id="busca" placeholder="Buscar por nome, telefone ou projeto" oninput="render()"><div id="lista"></div></div>
+</section>
+
+<section id="novo" class="hidden">
+<div class="card"><h2>Novo cliente</h2>
+<div class="row"><label>Nome<input id="nome"></label><label>WhatsApp<input id="fone"></label></div>
+<div class="row"><label>Projeto<input id="projeto" placeholder="Ex.: cozinha planejada"></label><label>Valor estimado<input id="valor" type="number" placeholder="22000"></label></div>
+<div class="row"><label>Status<select id="status"><option>Novo lead</option><option>Em atendimento</option><option>Visita</option><option>Orçamento</option><option>Negociação</option><option>Fechado</option><option>Perdido</option></select></label><label>Próximo contato<input id="data" type="date"></label></div>
+<label>Observações<textarea id="obs" rows="4"></textarea></label>
+<button class="primary" onclick="salvar()">Salvar cliente</button><div id="msg" class="hidden"></div></div>
+</section>
+
+<section id="voz" class="hidden">
+<div class="card"><h2>🎤 Lançamento por voz</h2>
+<p>Toque no botão e fale naturalmente. Exemplo:</p>
+<div class="item">“João da Silva, cozinha planejada, orçamento de 22 mil. Gostou do projeto, vai conversar com a esposa e retornar sexta-feira.”</div>
+<button class="voice" onclick="voz()">🎙️ Falar agora</button>
+<p id="vozStatus" class="muted"></p>
+<textarea id="transcricao" rows="7" placeholder="O que você falar aparecerá aqui. Você poderá editar antes de salvar."></textarea>
+<button class="primary" onclick="interpretarVoz()">Organizar lançamento</button>
+<div id="vozResultado"></div>
+</div>
+</section>
+
+<section id="tarefas" class="hidden">
+<div class="card"><h2>📅 Follow-ups</h2><div id="tasks"></div></div>
+</section>
+</main>
+<script>
+const KEY='crmGS_v1';
+let db=JSON.parse(localStorage.getItem(KEY)||'{"clientes":[],"tarefas":[]}');
+function saveDB(){localStorage.setItem(KEY,JSON.stringify(db));render()}
+function money(n){return Number(n||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}
+function show(id,btn){
+document.querySelectorAll('main section').forEach(x=>x.classList.add('hidden'));
+document.getElementById(id).classList.remove('hidden');
+document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+if(btn)btn.classList.add('active'); render();
+}
+function salvar(){
+let c={id:Date.now(),nome:document.getElementById('nome').value.trim(),fone:document.getElementById('fone').value.trim(),projeto:document.getElementById('projeto').value.trim(),valor:Number(document.getElementById('valor').value||0),status:document.getElementById('status').value,data:document.getElementById('data').value,obs:document.getElementById('obs').value.trim(),criado:new Date().toISOString()};
+if(!c.nome){alert('Digite o nome do cliente.');return}
+db.clientes.unshift(c);
+if(c.data)db.tarefas.push({id:Date.now()+1,cliente:c.nome,data:c.data,acao:'Retornar contato',feito:false});
+saveDB(); document.getElementById('msg').textContent='Cliente salvo com sucesso!';document.getElementById('msg').classList.remove('hidden');
+['nome','fone','projeto','valor','data','obs'].forEach(id=>document.getElementById(id).value='');
+}
+function render(){
+document.getElementById('kClientes').textContent=db.clientes.length;
+document.getElementById('kNeg').textContent=db.clientes.filter(c=>c.status==='Negociação').length;
+document.getElementById('kValor').textContent=money(db.clientes.reduce((s,c)=>s+(c.valor||0),0));
+document.getElementById('kTasks').textContent=db.tarefas.filter(t=>!t.feito).length;
+let q=(document.getElementById('busca')?.value||'').toLowerCase();
+let arr=db.clientes.filter(c=>(c.nome+' '+c.fone+' '+c.projeto).toLowerCase().includes(q));
+document.getElementById('lista').innerHTML=arr.map(c=>`<div class="item"><b>${esc(c.nome)}</b><br><span class="muted">${esc(c.fone||'')}</span><br>${esc(c.projeto||'')} — ${money(c.valor)}<br><span class="status">${esc(c.status)}</span>${c.data?' · retorno '+fmt(c.data):''}<br><small>${esc(c.obs||'')}</small><br><button class="danger" onclick="del(${c.id})">Excluir</button></div>`).join('')||'<p class="muted">Nenhum cliente.</p>';
+document.getElementById('recent').innerHTML=db.clientes.slice(0,5).map(c=>`<div class="item"><b>${esc(c.nome)}</b> — ${esc(c.projeto||'')} <span class="status">${esc(c.status)}</span></div>`).join('')||'<p class="muted">Cadastre o primeiro cliente.</p>';
+document.getElementById('tasks').innerHTML=db.tarefas.filter(t=>!t.feito).sort((a,b)=>a.data.localeCompare(b.data)).map(t=>`<div class="item"><b>${esc(t.cliente)}</b><br>${fmt(t.data)} — ${esc(t.acao)} <button class="secondary" onclick="feito(${t.id})">Concluir</button></div>`).join('')||'<p class="muted">Nenhum follow-up pendente.</p>';
+}
+function del(id){if(confirm('Excluir este cliente?')){db.clientes=db.clientes.filter(c=>c.id!==id);saveDB()}}
+function feito(id){let t=db.tarefas.find(x=>x.id===id);if(t)t.feito=true;saveDB()}
+function fmt(x){if(!x)return'';let p=x.split('-');return p.reverse().join('/')}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function voz(){
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+if(!SR){document.getElementById('vozStatus').textContent='Seu navegador não disponibilizou reconhecimento de voz. Use Chrome no Android e permita o microfone.';return}
+let r=new SR();r.lang='pt-BR';r.interimResults=false;r.continuous=false;
+document.getElementById('vozStatus').textContent='🎙️ Ouvindo... fale agora.';
+r.onresult=e=>{document.getElementById('transcricao').value=e.results[0][0].transcript;document.getElementById('vozStatus').textContent='Texto capturado. Revise e toque em “Organizar lançamento”.'};
+r.onerror=e=>document.getElementById('vozStatus').textContent='Não consegui ouvir. Verifique a permissão do microfone e tente novamente.';
+r.onend=()=>{if(document.getElementById('vozStatus').textContent.includes('Ouvindo'))document.getElementById('vozStatus').textContent='Pronto.'};
+r.start();
+}
+function interpretarVoz(){
+let t=document.getElementById('transcricao').value.trim();
+if(!t){alert('Primeiro faça um lançamento por voz ou digite o relato.');return}
+let valor=(t.match(/(?:r\$|R\$)?\s*([\d.]+(?:,\d{1,2})?)/i)||[])[1];
+if(valor)valor=Number(valor.replace(/\./g,'').replace(',','.'));
+let data='';
+let hoje=new Date(); let lower=t.toLowerCase();
+if(lower.includes('amanhã')){hoje.setDate(hoje.getDate()+1);data=hoje.toISOString().slice(0,10)}
+else if(lower.includes('hoje'))data=new Date().toISOString().slice(0,10);
+document.getElementById('vozResultado').innerHTML=`<div class="card"><h3>Prévia do lançamento</h3><p><b>Relato:</b> ${esc(t)}</p><p><b>Valor identificado:</b> ${valor?money(valor):'não identificado'}</p><p><b>Data identificada:</b> ${data?fmt(data):'não identificada'}</p><button class="primary" onclick="salvarVoz()">Salvar como novo cliente</button></div>`;
+window._voz={t,valor:valor||0,data};
+}
+function salvarVoz(){
+let v=window._voz;if(!v)return;
+let nome=v.t.split(',')[0].trim();
+db.clientes.unshift({id:Date.now(),nome,fone:'',projeto:'',valor:v.valor,status:'Novo lead',data:v.data,obs:v.t,criado:new Date().toISOString()});
+if(v.data)db.tarefas.push({id:Date.now()+1,cliente:nome,data:v.data,acao:'Retornar contato',feito:false});
+saveDB();document.getElementById('vozResultado').innerHTML='<div id="msg">✅ Lançamento salvo!</div>';document.getElementById('transcricao').value='';
+}
+render();
+</script>
+</body></html>
